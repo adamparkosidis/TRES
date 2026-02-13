@@ -834,7 +834,7 @@ class StellarSystem_Class:
                 * bin.semimajor_axis
                 / self.triple.semimajor_axis
                 * self.triple.eccentricity
-                / (1 - self.triple.eccentricity**2)
+                / (1. - self.triple.eccentricity**2)
             )
 
         else:
@@ -858,7 +858,7 @@ class StellarSystem_Class:
                 * P_out**2
                 / P_in
                 * (self.get_mass(self.triple) / self.get_mass(star))
-                * (1 - self.triple.eccentricity**2) ** 1.5
+                * (1. - self.triple.eccentricity**2) ** 1.5
             )
 
         else:
@@ -905,6 +905,7 @@ class StellarSystem_Class:
             p2 = self.get_minimum_part_dt_mt(stellar_system.child2)
             p3 = stellar_system.part_dt_mt
             return min(p1, p2, p3)
+
 
     def set_part_dt_mt(self, value, stellar_system=None):
         if stellar_system == None:
@@ -1026,9 +1027,9 @@ class StellarSystem_Class:
                 )
                 print(
                     "eccentric binary Roche lobe radii:",
-                    roche_radius(bin, bin.child1, self) * (1 - bin.eccentricity),
-                    roche_radius(bin, bin.child2, self) * (1 - bin.eccentricity),
-                    roche_radius(self.triple, star, self) * (1 - self.triple.eccentricity),
+                    roche_radius(bin, bin.child1, self) * (1. - bin.eccentricity),
+                    roche_radius(bin, bin.child2, self) * (1. - bin.eccentricity),
+                    roche_radius(self.triple, star, self) * (1. - self.triple.eccentricity),
                 )
                 print("Masses:", bin.child1.mass, bin.child2.mass, star.mass)
                 print("Semi:", bin.semimajor_axis, self.triple.semimajor_axis)
@@ -2770,7 +2771,7 @@ class StellarSystem_Class:
     def evolve_model(self, tend):
         self.tend = tend
         CPU_start_time = time.time()
-
+        
         if REPORT_DEBUG or MAKE_PLOTS:
             # for plotting data
             times_array = quantities.AdaptingVectorQuantity()
@@ -2864,7 +2865,7 @@ class StellarSystem_Class:
                 moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2 * units.MSun))
                 moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2 * units.MSun))
 
-
+        
         include_inner_RLOF_term_initial = self.secular_code.parameters.include_inner_RLOF_terms
         include_outer_RLOF_term_initial = self.secular_code.parameters.include_outer_RLOF_terms
 
@@ -2886,9 +2887,8 @@ class StellarSystem_Class:
                     self.triple.kozai_type,
                     self.octupole_parameter(),
                 )
-
+            
             # resetting and testing some parameters
-
             # if the maximum CPU time has been exceeded for the system, stop the evolution and continue with the next system
             CPU_end_time = time.time()
             self.triple.CPU_time = CPU_end_time - CPU_start_time
@@ -2903,6 +2903,8 @@ class StellarSystem_Class:
                 self.secular_code.parameters.include_inner_RLOF_terms = True
             if include_outer_RLOF_term_initial == True:
                 self.secular_code.parameters.include_outer_RLOF_terms = True
+            
+            # print("1. Time {:} eccentricity {:}".format(self.triple.time, self.triple.eccentricity))
 
             # setting time parameters
             if self.has_stellar_type_changed() or self.has_kozai_type_changed():
@@ -2958,10 +2960,10 @@ class StellarSystem_Class:
                     if self.adjust_system_after_supernova_kick() == False:
                         break
                     self.instantaneous_evolution = True  # skip secular evolution
-
+                
                 self.check_RLOF()
-                self.check_OLOF()
-
+                self.check_OLOF()    
+                
                 if (
                     (self.has_donor() or self.has_OLOF_donor())
                     and self.fully_detached_system()
@@ -2984,10 +2986,10 @@ class StellarSystem_Class:
                     # note that 'previous' parameters cannot be reset
                     # resetting is_donor in determine_time_step
                     continue
-
+                    
             # needed for nucleair timescale
             self.update_time_derivative_of_radius()
-
+            
             # do stellar interaction
             if REPORT_DEBUG:
                 print("Stellar interaction")
@@ -3000,11 +3002,11 @@ class StellarSystem_Class:
                 print("stopping conditions stellar interaction")
                 break
             self.update_time_derivative_of_radius()  # includes radius change from wind and ce, not stable mt
+            
             self.update_time_derivative_of_moment_of_inertia()  # includes mass and radius change from wind and mass transfer
             if self.check_stopping_conditions_stellar_interaction() == False:
                 print("stopping conditions stellar interaction 2")
-                break
-
+                break        
             # do secular evolution
             if self.instantaneous_evolution == False:
                 if REPORT_DEBUG:
@@ -3028,7 +3030,7 @@ class StellarSystem_Class:
 
                 if REPORT_DEBUG:
                     print("Secular evolution finished")
-
+                
                 # to differentiate between semi-detached and contact
                 self.check_RLOF()
                 self.check_OLOF()
@@ -3075,9 +3077,10 @@ class StellarSystem_Class:
                 ):
                     # time difference secular code & tres small enough to continue mass transfer
                     self.secular_code.model_time = self.triple.time
-
+                
                 self.channel_from_secular.copy()
-
+                # print("2.", self.triple.as_set().eccentricity)
+                # print("2. Time {:} eccentricity {:}".format(self.triple.time, self.triple.eccentricity))
                 if self.check_error_flag_secular() == False:
                     break
                 if self.check_spin_angular_frequency() == False:

@@ -1,0 +1,215 @@
+digraph evolve_model {
+    // Graph settings
+    rankdir=TB;
+    node [fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=9];
+    
+    // Terminal nodes
+    Start [label="Start Evolution", shape=ellipse, style=filled, fillcolor=lightgray];
+    End [label="End Evolution", shape=ellipse, style=filled, fillcolor=lightgray];
+    
+    // Initialize
+    Init [label=<<b>Initialize</b><br/><i>Set up time parameters and snapshots</i>>, shape=box, style=rounded];
+    
+    // Main loop
+    WhileLoop [label="Time < tend?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    
+    // CPU check
+    CPUCheck [label="CPU time\nexceeded?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    
+    // Reset RLOF
+    ResetRLOF [label=<<b>Reset RLOF Terms</b><br/><i>Restore RLOF flags if initially enabled</i>>, shape=box, style=rounded];
+    
+    // Type check
+    TypeCheck [label="Stellar type or\nKozai type\nchanged?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    SaveSnap1 [label=<<b>save_snapshot</b><br/><i>Store current system state</i>>, shape=box, style=rounded];
+    DetermineTimeStep [label=<<b>determine_time_step</b><br/><i>Calculate adaptive timestep dt</i>>, shape=box, style=rounded];
+    
+    // Time stepping
+    UpdatePrev [label=<<b>update_previous_stellar_parameters</b><br/><i>Store stellar state before evolution</i>>, shape=box, style=rounded];
+    RefreshMem [label=<<b>refresh_memory</b><br/><i>Save stellar code state for potential rewind</i>>, shape=box, style=rounded];
+    AdvanceTime [label=<<b>Advance Time</b><br/><i>time += dt</i>>, shape=box, style=rounded];
+    
+    // Instantaneous check
+    InstCheck [label="time < tinit?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    SetInstant [label=<<b>Set instantaneous_evolution = True</b><br/><i>Skip secular evolution for initialization</i>>, shape=box, style=rounded];
+    
+    // Stellar evolution block
+    StellarEvol [label=<<b>STELLAR EVOLUTION BLOCK</b>>, shape=box, style="filled,bold", fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    
+    CHECheck [label="Include CHE?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    CopyCHE [label=<<b>copy rotation_period to stellar</b><br/><i>Sync rotation for chemically homogeneous evolution</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    
+    PlanetEvap [label=<<b>planetary_mass_evaporation</b><br/><i>Model mass loss from planetary bodies</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    StellarCodeEvolve [label=<<b>stellar_code.evolve_model</b><br/><i>Evolve stellar structure and properties</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    
+    CopyFromStellar [label=<<b>copy_from_stellar</b><br/><i>Transfer updated stellar properties to TRES</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    UpdateStellar [label=<<b>update_stellar_parameters</b><br/><i>Recalculate derived stellar quantities</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    
+    SafetyCheck [label="Safety check\npassed?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    RecallLoop [label=<<b>recall_memory_one_step_stellar</b><br/><i>Rewind stellar code and retry with smaller dt</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    
+    SNCheck [label="Supernova\noccurred?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    AdjustSN [label=<<b>adjust_system_after_supernova_kick</b><br/><i>Apply SN kick and adjust orbital parameters</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    SNSuccess [label="System\nsurvived?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    SetInstSN [label=<<b>Set instantaneous_evolution = True</b><br/><i>Skip secular for SN event</i>>, shape=box, style=rounded];
+    
+    CheckRLOF [label=<<b>check_RLOF &amp; check_OLOF</b><br/><i>Detect Roche lobe and outer lobe overflow</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    DonorCheck [label="Has donor and\ndetached and\ndt > 0.5*donor\ntimescale?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    
+    RewindRLOF [label=<<b>recall_memory_one_step</b><br/><i>Rewind stellar code to start of RLOF</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    RefreshStars [label=<<b>refresh_memory_stars</b><br/><i>Update stellar memory state</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    
+    UpdateRadiusDeriv [label=<<b>update_time_derivative_of_radius</b><br/><i>Calculate radius change rate for tidal evolution</i>>, shape=box, style=rounded];
+    
+    // Interaction block
+    InteractionBlock [label=<<b>STELLAR INTERACTION BLOCK</b>>, shape=box, style="filled,bold", fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    
+    DetMTTimescale [label=<<b>determine_mass_transfer_timescale</b><br/><i>Calculate timescale for mass exchange</i>>, shape=box, style=rounded];
+    CheckStopStellar [label="Stopping\nconditions\nstellar?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    ResolveInteract [label=<<b>resolve_stellar_interaction</b><br/><i>Handle mass transfer, winds, and common envelope</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    
+    ResolveSuccess [label="Resolved\nsuccessfully?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    UpdateRadiusDeriv2 [label=<<b>update_time_derivative_of_radius</b><br/><i>Update radius change from wind and CE</i>>, shape=box, style=rounded];
+    
+    UpdateMOI [label=<<b>update_time_derivative_of_moment_of_inertia</b><br/><i>Update spin evolution from mass and radius changes</i>>, shape=box, style=rounded];
+    CheckStopInteract [label="Stopping\nconditions\ninteraction?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    
+    InstantCheck [label="instantaneous\nevolution?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    SkipSecular [label=<<b>Skip Secular Evolution</b><br/><i>Set secular time = triple time</i>>, shape=box, style=rounded];
+    ResetInstant [label=<<b>Set instantaneous_evolution = False</b>>, shape=box, style=rounded];
+    
+    // Secular block
+    SecularBlock [label=<<b>SECULAR EVOLUTION BLOCK</b>>, shape=box, style="filled,bold", fillcolor="#cce5ff", color="#0066cc", penwidth=2];
+    
+    SaveSnapshot [label=<<b>Save snapshot_triple</b><br/><i>Save current orbital state for potential rewind</i>>, shape=box, style=filled, fillcolor="#cce5ff", color="#0066cc", penwidth=2];
+    CopyToSecular [label=<<b>copy to secular_code</b><br/><i>Transfer orbital elements to secular integrator</i>>, shape=box, style=filled, fillcolor="#cce5ff", color="#0066cc", penwidth=2];
+    
+    PartialCheck [label="Partial dt\nfor MT?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    PartialMT [label=<<b>solve_for_partial_time_step_stable_mass_transfer</b><br/><i>Evolve secular only for fraction of timestep</i>>, shape=box, style=filled, fillcolor="#cce5ff", color="#0066cc", penwidth=2];
+    SecularCodeEvolve [label=<<b>secular_code.evolve_model</b><br/><i>Integrate secular tidal and Kozai-Lidov dynamics</i>>, shape=box, style=filled, fillcolor="#cce5ff", color="#0066cc", penwidth=2];
+    
+    PartialSuccess [label="Successful?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    CheckRLOF2 [label=<<b>check_RLOF &amp; check_OLOF</b><br/><i>Detect overflow after secular evolution</i>>, shape=box, style=filled, fillcolor="#cce5ff", color="#0066cc", penwidth=2];
+    
+    TimeConsist [label="Time\nconsistency\ncheck?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    RewindSecular [label=<<b>rewind_to_begin_of_rlof_secular</b><br/><i>Rewind to start of RLOF in secular code</i>>, shape=box, style=filled, fillcolor="#cce5ff", color="#0066cc", penwidth=2];
+    RefreshOrbits [label=<<b>refresh_memory_orbits</b><br/><i>Restore orbital state from snapshot</i>>, shape=box, style=filled, fillcolor="#cce5ff", color="#0066cc", penwidth=2];
+    
+    CopyFromSecular [label=<<b>copy from secular_code</b><br/><i>Transfer updated orbital elements back to TRES</i>>, shape=box, style=filled, fillcolor="#cce5ff", color="#0066cc", penwidth=2];
+    CheckErrorFlag [label="Error flag\ncheck?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    CheckSpin [label="Spin check?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    DetMTTimescale2 [label=<<b>determine_mass_transfer_timescale</b><br/><i>Recalculate MT timescale after secular</i>>, shape=box, style=rounded];
+    
+    CheckStop [label="Stopping\nconditions?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    CollisionCheck [label="Inner collision\nand not stop\nat collision?", shape=diamond, style=filled, fillcolor="#d3d3d3"];
+    PerformCollision [label=<<b>perform_inner_collision</b><br/><i>Merge inner binary components</i>>, shape=box, style=filled, fillcolor="#ffcccc", color="#cc0000", penwidth=2];
+    
+    CalcMaxChange [label=<<b>calculate_maximum_change_eccentricity</b><br/><i>Track maximal eccentricity change for diagnostics</i>>, shape=box, style=rounded];
+    
+    // Edges
+    Start -> Init;
+    Init -> WhileLoop;
+    
+    WhileLoop -> End [label="No"];
+    WhileLoop -> CPUCheck [label="Yes"];
+    
+    CPUCheck -> End [label="Yes"];
+    CPUCheck -> ResetRLOF [label="No"];
+    
+    ResetRLOF -> TypeCheck;
+    TypeCheck -> SaveSnap1 [label="Yes"];
+    TypeCheck -> DetermineTimeStep [label="No"];
+    SaveSnap1 -> DetermineTimeStep;
+    
+    DetermineTimeStep -> UpdatePrev;
+    UpdatePrev -> RefreshMem;
+    RefreshMem -> AdvanceTime;
+    
+    AdvanceTime -> InstCheck;
+    InstCheck -> SetInstant [label="Yes"];
+    InstCheck -> StellarEvol [label="No"];
+    SetInstant -> StellarEvol;
+    
+    StellarEvol -> CHECheck;
+    CHECheck -> CopyCHE [label="Yes"];
+    CHECheck -> PlanetEvap [label="No"];
+    CopyCHE -> PlanetEvap;
+    
+    PlanetEvap -> StellarCodeEvolve;
+    StellarCodeEvolve -> CopyFromStellar;
+    CopyFromStellar -> UpdateStellar;
+    
+    UpdateStellar -> SafetyCheck;
+    SafetyCheck -> RecallLoop [label="No"];
+    RecallLoop -> SafetyCheck [label="Continue", style=dashed];
+    SafetyCheck -> SNCheck [label="Yes"];
+    
+    SNCheck -> AdjustSN [label="Yes"];
+    AdjustSN -> SNSuccess;
+    SNSuccess -> End [label="No"];
+    SNSuccess -> SetInstSN [label="Yes"];
+    SNCheck -> CheckRLOF [label="No"];
+    SetInstSN -> CheckRLOF;
+    
+    CheckRLOF -> DonorCheck;
+    DonorCheck -> RewindRLOF [label="Yes"];
+    RewindRLOF -> RefreshStars;
+    RefreshStars -> WhileLoop [label="Continue", style=dashed];
+    DonorCheck -> UpdateRadiusDeriv [label="No"];
+    
+    UpdateRadiusDeriv -> InteractionBlock;
+    InteractionBlock -> DetMTTimescale;
+    DetMTTimescale -> CheckStopStellar;
+    CheckStopStellar -> End [label="No"];
+    CheckStopStellar -> ResolveInteract [label="Yes"];
+    
+    ResolveInteract -> ResolveSuccess;
+    ResolveSuccess -> End [label="No"];
+    ResolveSuccess -> UpdateRadiusDeriv2 [label="Yes"];
+    
+    UpdateRadiusDeriv2 -> UpdateMOI;
+    UpdateMOI -> CheckStopInteract;
+    CheckStopInteract -> End [label="No"];
+    CheckStopInteract -> InstantCheck [label="Yes"];
+    
+    InstantCheck -> SkipSecular [label="Yes"];
+    InstantCheck -> SecularBlock [label="No"];
+    SkipSecular -> ResetInstant;
+    ResetInstant -> CalcMaxChange;
+    
+    SecularBlock -> SaveSnapshot;
+    SaveSnapshot -> CopyToSecular;
+    CopyToSecular -> PartialCheck;
+    
+    PartialCheck -> PartialMT [label="Yes"];
+    PartialCheck -> SecularCodeEvolve [label="No"];
+    
+    PartialMT -> PartialSuccess;
+    PartialSuccess -> End [label="No"];
+    PartialSuccess -> CheckRLOF2 [label="Yes"];
+    SecularCodeEvolve -> CheckRLOF2;
+    
+    CheckRLOF2 -> TimeConsist;
+    TimeConsist -> End [label="triple < sec time"];
+    TimeConsist -> RewindSecular [label="Donor + detached\n+ time lag"];
+    
+    RewindSecular -> RefreshOrbits;
+    RefreshOrbits -> WhileLoop [label="Continue", style=dashed];
+    
+    TimeConsist -> CopyFromSecular [label="OK"];
+    CopyFromSecular -> CheckErrorFlag;
+    CheckErrorFlag -> End [label="Error"];
+    CheckErrorFlag -> CheckSpin [label="OK"];
+    CheckSpin -> End [label="Error"];
+    CheckSpin -> DetMTTimescale2 [label="OK"];
+    
+    DetMTTimescale2 -> CheckStop;
+    CheckStop -> End [label="No"];
+    CheckStop -> CollisionCheck [label="Yes"];
+    CollisionCheck -> PerformCollision [label="Yes"];
+    CollisionCheck -> CalcMaxChange [label="No"];
+    PerformCollision -> CalcMaxChange;
+    
+    CalcMaxChange -> WhileLoop;
+}

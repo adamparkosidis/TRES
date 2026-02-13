@@ -47,7 +47,7 @@ bool check_for_dynamical_stability_at_initialisation = true;
 bool check_for_semisecular_regime_at_initialisation = TRUE;
 bool verbose = TRUE;
 double relative_tolerance = 1.0e-10;
-double input_precision = 1.0e-5;
+double input_precision = 1.0e-7; // machine epsilon for double precision, old minimum_ecentricity = 1.0e-5; 2.2204460492503131e-16;
 double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = 1.0e-12;
 double threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero = 1.0e-7;
 int linear_solver = 0;
@@ -294,11 +294,7 @@ int evolve(
         */
         cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
         flag = CVodeInit(cvode_mem, fev_delaunay, start_time, yev);
-        
-    }
-    else
-    {
-        exit(-1);
+
     }
 
 

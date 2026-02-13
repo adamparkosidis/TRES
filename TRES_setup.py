@@ -101,7 +101,7 @@ def make_bins(stars, semimajor_axis_list,
 
     
     bins.mass_transfer_rate = 0.0 | units.MSun/units.yr
-    bins.accretion_efficiency_mass_transfer = 1.0
+    bins.accretion_efficiency_mass_transfer = 0.0
     bins.accretion_efficiency_wind_child1_to_child2 = 0.0
     bins.accretion_efficiency_wind_child2_to_child1 = 0.0
     # binary evolutionary settings
@@ -211,16 +211,16 @@ def setup_secular_code(triple, secular_code, stop_at_semisecular_regime):
 
     secular_code.parameters.ignore_tertiary = False
 
-    secular_code.parameters.include_quadrupole_terms = True
-    secular_code.parameters.include_octupole_terms = True
-    secular_code.parameters.include_inner_wind_terms = True
-    secular_code.parameters.include_outer_wind_terms = True
+    secular_code.parameters.include_quadrupole_terms = False
+    secular_code.parameters.include_octupole_terms = False
+    secular_code.parameters.include_inner_wind_terms = False
+    secular_code.parameters.include_outer_wind_terms = False
     secular_code.parameters.include_inner_RLOF_terms = True
-    secular_code.parameters.include_outer_RLOF_terms = True
+    secular_code.parameters.include_outer_RLOF_terms = False
     secular_code.parameters.include_magnetic_braking_terms = False # not tested
 
-    secular_code.parameters.include_inner_tidal_terms = True
-    secular_code.parameters.include_outer_tidal_terms = True
+    secular_code.parameters.include_inner_tidal_terms = False
+    secular_code.parameters.include_outer_tidal_terms = False
 
     secular_code.parameters.include_tertiary_tidal_terms_circ = False
     secular_code.parameters.include_tertiary_tidal_terms = False
@@ -230,11 +230,11 @@ def setup_secular_code(triple, secular_code, stop_at_semisecular_regime):
         sys.exit('Both circular and eccentric tertiary tides are switched on. Please pick one or the other.')
 
 
-    secular_code.parameters.include_1PN_inner_terms = True
-    secular_code.parameters.include_1PN_outer_terms = True
+    secular_code.parameters.include_1PN_inner_terms = False
+    secular_code.parameters.include_1PN_outer_terms = False
     secular_code.parameters.include_1PN_inner_outer_terms = False ### warning: probably broken
-    secular_code.parameters.include_25PN_inner_terms = True
-    secular_code.parameters.include_25PN_outer_terms = True
+    secular_code.parameters.include_25PN_inner_terms = False
+    secular_code.parameters.include_25PN_outer_terms = False
 
     secular_code.parameters.check_for_dynamical_stability = True
     secular_code.parameters.check_for_dynamical_stability_at_initialisation = True
@@ -243,10 +243,10 @@ def setup_secular_code(triple, secular_code, stop_at_semisecular_regime):
     secular_code.parameters.check_for_semisecular_regime_at_initialisation = stop_at_semisecular_regime
 
     secular_code.parameters.check_for_inner_collision = True
-    secular_code.parameters.check_for_outer_collision = True
+    secular_code.parameters.check_for_outer_collision = False
 
     secular_code.parameters.check_for_inner_RLOF = True
-    secular_code.parameters.check_for_outer_RLOF = True
+    secular_code.parameters.check_for_outer_RLOF = False
 
     secular_code.parameters.include_spin_radius_mass_coupling_terms_star1 = True
     secular_code.parameters.include_spin_radius_mass_coupling_terms_star2 = True

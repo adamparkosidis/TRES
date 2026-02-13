@@ -372,8 +372,8 @@ if __name__ == '__main__':
 #        stellar_code = SeBa(redirection='file', redirect_file='output_SeBa_BIN.txt')
     stellar_code.parameters.metallicity = args["metallicity"]
 
-    secular_code = SecularTriple()
-#    secular_code = SecularTriple(redirection='none')
+#    secular_code = SecularTriple()
+    secular_code = SecularTriple(redirection='none')
 #    secular_code = SecularTriple(redirection='file', redirect_file='output_SecularTriple_BIN.txt')
 
     bin_class_object = StellarSystem_Class(stars, bins, correct_params, stellar_code, secular_code, args)

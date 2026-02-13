@@ -7,8 +7,8 @@ from TRES_options import REPORT_BINARY_EVOLUTION, REPORT_FUNCTION_NAMES, REPORT_
 
 #constants
 numerical_error  = 1.e-6
-small_numerical_error  = 1.e-10
-minimum_eccentricity = 1.e-5
+small_numerical_error  = 1.e-12
+minimum_eccentricity = np.finfo(np.float64).eps #1.e-7 #1.e-5  
 
 const_common_envelope_efficiency = 4.0 #1.0, 4 for now for easier testing with SeBa
 const_envelope_structure_parameter = 0.5
@@ -729,6 +729,7 @@ def stable_mass_transfer(bs, donor, accretor, self):
     donor_in_stellar_code = donor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
     donor_in_stellar_code.change_mass(dm_desired+(small_numerical_error|units.MSun), dt)
 
+    
     # dm != dm_desired e.g. when the envelope of the star becomes empty
     dm = donor_in_stellar_code.mass - Md
     bs.part_dt_mt = 1.
@@ -738,13 +739,15 @@ def stable_mass_transfer(bs, donor, accretor, self):
 
     # there is an implicit assumption in change_mass that the accreted mass is of solar composition (hydrogen)
     accretor_in_stellar_code = accretor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
+    
 #    accretor_in_stellar_code.change_mass(dm, dt)
-    # for now, only conservative mass transfer
-    accretor_in_stellar_code.change_mass(-1.*dm, -1.*dt)
+    # accretion_efficiency = 1.0 for conservative mass transfer
+    accretion_efficiency = self.triple.accretion_efficiency_mass_transfer
+    accretor_in_stellar_code.change_mass(-1.*accretion_efficiency*dm, -1.*dt)
     #if you want seba to determine the accretion efficiency, use
     #accretor_in_stellar_code.change_mass(-1.*dm, dt)
     #note doesnt work perfectly, as seba is oblivious to the roche lobe radius
-
+    
 
     #to adjust radius to mass loss and increase
     self.stellar_code.evolve_model(self.triple.time)
@@ -754,16 +757,16 @@ def stable_mass_transfer(bs, donor, accretor, self):
 
     Md_new = donor.mass
     Ma_new = accretor.mass
-    accretion_efficiency = (Ma_new-Ma)/(Md-Md_new)
+    # accretion_efficiency = (Ma_new-Ma)/(Md-Md_new)
     if abs(accretion_efficiency - 1.0) > numerical_error and abs(Md-Md_new - -1.*(Ma-Ma_new)) > numerical_error |units.MSun:
         self.save_snapshot()
         print('stable_mass_transfer: non conservative mass transfer')
         print(Md, Ma, donor.previous_mass, accretor.previous_mass)
-        print(Md_new, Ma_new, Md-Md_new, Ma-Ma_new, accretion_efficiency)
+        print(Md_new, Ma_new, Md-Md_new, Ma_new-Ma, accretion_efficiency)
         print(donor.stellar_type, accretor.stellar_type)
-        sys.exit('error in stable mass transfer')
+        #sys.exit('error in stable mass transfer')
 
-    bs.accretion_efficiency_mass_transfer = accretion_efficiency
+    bs.accretion_efficiency_mass_transfer = self.triple.accretion_efficiency_mass_transfer
 
     corotation_spin = corotating_spin_angular_frequency_binary(bs.semimajor_axis, donor.mass, accretor.mass)
     donor.spin_angular_frequency = corotation_spin
